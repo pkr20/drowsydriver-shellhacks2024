@@ -5,7 +5,9 @@ import dlib
 detector = dlib.get_frontal_face_detector()
 predictor = dlib.shape_predictor('face_data.dat') # these 2 calls are carrying
 
-cap = cv2.VideoCapture(0)
+##cap = cv2.VideoCapture(0)
+cap = cv2.VideoCapture(1)
+
 
 while True:
     

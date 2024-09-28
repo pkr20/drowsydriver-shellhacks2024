@@ -1,6 +1,7 @@
 import cv2
 import dlib
 from scipy.spatial import distance as dist
+import time
 
 # ear = eye aspect ratio 
 # most every example I saw of tracking eyes closing or opening used this approach
@@ -11,17 +12,29 @@ def calculate_ear(eye):
     ear = (A + B) / (2.0 * C)
     return ear
 
+def calculate_mouth_ear(mouth):
+    A = dist.euclidean(mouth[1], mouth[9])
+    B = dist.euclidean(mouth[2], mouth[10])
+    C = dist.euclidean(mouth[0], mouth[6])
+    mar = (A + B) / (2.0 * C)
+    return mar
+
 
 detector = dlib.get_frontal_face_detector()
 predictor = dlib.shape_predictor('face_data.dat')
 
-# Threshold for detecting closed eyes
+# threshold for detecting closed eyes
 EYE_AR_THRESHOLD = 0.23  # this could be fine tuned but chatgpt said .23 works best
 WINK_DIFF_THRESHOLD = 0.08  # idk wink feature was cool and easy to add
 eye_closed_counter = 0 # un used as of now
+eye_closed_time = None
+yawn_counter = 0
+yawn_status = False
+yawn_start_time = None
+## mouth threshold 
+MOUTH_AR_THRESHOLD = 0.6
 
-
-cap = cv2.VideoCapture(0)
+cap = cv2.VideoCapture(1)
 
 while True:
     ret, frame = cap.read()
@@ -39,8 +52,26 @@ while True:
 
     for face in faces:
         landmarks = predictor(gray_frame, face)
+        #adding mouth landmarks
+        mouth = [(landmarks.part(n).x, landmarks.part(n).y) for n in range(48, 68)]
+        mar = calculate_mouth_ear(mouth)
+        #counting the yawns not sure if will keep
+        if mar > MOUTH_AR_THRESHOLD:
+            if not yawn_status:
+                yawn_status = True
+                yawn_start_time = time.time()
+            elif time.time() - yawn_start_time >= 1:
+                yawn_counter += 1
+                yawn_status = False
+            mouth_status = "Yawning"
+        else:
+            yawn_status = False
+            mouth_status = "Not Yawning"
 
-       
+        for (x, y) in mouth:
+            cv2.circle(gray_frame_colored, (x, y), 2, (0, 255, 255), -1)
+
+
         left_eye = [(landmarks.part(n).x, landmarks.part(n).y) for n in range(42, 48)]
         right_eye = [(landmarks.part(n).x, landmarks.part(n).y) for n in range(36, 42)]
 
@@ -53,6 +84,12 @@ while True:
             eye_status = "Both Closed"
         # Check for winking (one eye closed and the other open with a significant EAR difference)
         # I found this to be necessary because the closed / open feature needs tuning
+            if eye_closed_time is None:
+                eye_closed_time = time.time() 
+            elif time.time() - eye_closed_time >= 2.2: #eyes closed for a second or more
+                eye_closed_counter += 1
+                eye_closed_time = None #resets timer each time
+
         elif abs(left_ear - right_ear) > WINK_DIFF_THRESHOLD:
             if left_ear < right_ear:
                 eye_status = "Winking Left"
@@ -61,16 +98,23 @@ while True:
         else:
             eye_status = "Open"
 
-        # Draw the landmarks for both eyes in color on the grayscale frame
+        # draw the landmarks for both eyes in color on the grayscale frame
         for (x, y) in left_eye:
             cv2.circle(gray_frame_colored, (x, y), 2, (0, 255, 0), -1)  
         for (x, y) in right_eye:
             cv2.circle(gray_frame_colored, (x, y), 2, (255, 0, 0), -1)  
 
+        #creating to it turns red if signs of sleepiness which will sound alarm in next iteration
+        if eye_closed_counter >= 5 or yawn_counter >= 3:
+            cv2.putText(gray_frame_colored, "DROWSINESS ALERT!", (20, 180), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2)
         
+
         avg_ear = (left_ear + right_ear) / 2.0 # this could removed later it was for debugging
-        cv2.putText(gray_frame_colored, f"EAR: {avg_ear:.2f}", (20, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 255), 2)
+        ##cv2.putText(gray_frame_colored, f"EAR: {avg_ear:.2f}", (20, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 255), 2)
         cv2.putText(gray_frame_colored, f"Eye Status: {eye_status}", (20, 60), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 255), 2)
+        cv2.putText(gray_frame_colored, f"Mouth Status: {mouth_status}", (20, 90), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 255), 2)
+        cv2.putText(gray_frame_colored, f"Eye Closed Counter: {eye_closed_counter}", (20, 120), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 255), 2)
+        cv2.putText(gray_frame_colored, f"Yawn Count: {yawn_counter}", (20, 150), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 255), 2)
 
 
     cv2.imshow('Facial Landmarks', gray_frame_colored) # gray frame so the colors stand out
