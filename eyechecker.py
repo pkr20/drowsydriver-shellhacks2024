@@ -52,6 +52,7 @@ while True:
         if left_ear < EYE_AR_THRESHOLD and right_ear < EYE_AR_THRESHOLD:
             eye_status = "Both Closed"
         # Check for winking (one eye closed and the other open with a significant EAR difference)
+        # I found this to be necessary because the closed / open feature needs tuning
         elif abs(left_ear - right_ear) > WINK_DIFF_THRESHOLD:
             if left_ear < right_ear:
                 eye_status = "Winking Left"
