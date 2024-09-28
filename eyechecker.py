@@ -2,6 +2,14 @@ import cv2
 import dlib
 from scipy.spatial import distance as dist
 import time
+import azure.cognitiveservices.speech as speechsdk
+import threading
+
+speech_config = speechsdk.SpeechConfig(subscription="0f1530ace5b74b329819de48cc9a1e66", region="eastus")
+
+def speak_alert():
+    speech_synthesizer = speechsdk.SpeechSynthesizer(speech_config=speech_config)
+    speech_synthesizer.speak_text_async("Alert! Drowsiness detected.").get()
 
 # ear = eye aspect ratio 
 # most every example I saw of tracking eyes closing or opening used this approach
@@ -104,9 +112,15 @@ while True:
         for (x, y) in right_eye:
             cv2.circle(gray_frame_colored, (x, y), 2, (255, 0, 0), -1)  
 
+
+        
         #creating to it turns red if signs of sleepiness which will sound alarm in next iteration
-        if eye_closed_counter >= 5 or yawn_counter >= 3:
+        if eye_closed_counter >= 1 or yawn_counter >= 3:
             cv2.putText(gray_frame_colored, "DROWSINESS ALERT!", (20, 180), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2)
+            threading.Thread(target=speak_alert).start()
+                
+            
+            
         
 
         avg_ear = (left_ear + right_ear) / 2.0 # this could removed later it was for debugging
