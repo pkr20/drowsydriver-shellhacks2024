@@ -3,12 +3,17 @@
 
 from flask import Flask, jsonify
 from flask_socketio import SocketIO
+from flask_cors import CORS
 import base64
 
 app = Flask(__name__)
-socketio = SocketIO(app)
+socketio = SocketIO(app, cors_allowed_origins="*")
+
+@app.route('/')
+def index():
+    return "WebSocket Server is running!"
     
-@socketio.on('connect')
+@socketio.on('connect', namespace='/connect')
 def handle_connect():
     print("Client connected")
 
@@ -18,4 +23,7 @@ def handle_disconnect():
 
 @socketio.on('message')
 def handle_message(data):
-    print("message")
+    print("Received message:", data)
+    
+if __name__ == '__main__':
+    socketio.run(app, host='0.0.0.0', port=5000)
