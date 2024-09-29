@@ -124,8 +124,8 @@ while True:
         #creating to it turns red if signs of sleepiness which will sound alarm in next iteration
         current_time = time.time()
         if (eye_closed_counter % 5 == 0 and eye_closed_counter != 0) or (yawn_counter % 3 == 0 and yawn_counter != 0):
+            cv2.putText(gray_frame_colored, "DROWSINESS ALERT!", (20, 180), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2)
             if current_time - last_alert_time > ALERT_CUSHION:
-                cv2.putText(gray_frame_colored, "DROWSINESS ALERT!", (20, 180), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2)
                 threading.Thread(target=speak_alert).start()
                 alert_counter += 1
                 last_alert_time = current_time
