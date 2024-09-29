@@ -1,6 +1,8 @@
 
 # Drowsy Driver Project
 
+![Demo video of the project](readme_assets/demo.gif)
+
 ## Overview
 
 The **Drowsy Driver** project is a real-time driver fatigue monitoring software designed to enhance road safety. It utilizes facial recognition to detect eye and mouth movements that indicate drowsiness and alerts the driver when signs of fatigue are detected. The system uses Computer Vision techniques to track facial landmarks and detect closed eyes or yawning, providing real-time warnings through visual and auditory alerts.
