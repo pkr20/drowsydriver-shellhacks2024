@@ -1,29 +1,15 @@
-# This file is for the React <-> Python connection
-# While the demo is going we want to share data every x seconds
-
-from flask import Flask, jsonify
-from flask_socketio import SocketIO
-from flask_cors import CORS
-import base64
+from flask import Flask, jsonify, request
+import subprocess
 
 app = Flask(__name__)
-socketio = SocketIO(app, cors_allowed_origins="*")
 
-@app.route('/')
-def index():
-    return "WebSocket Server is running!"
-    
-@socketio.on('connect', namespace='/connect')
-def handle_connect():
-    print("Client connected")
+@app.route('/execute', methods=['POST'])
+def process_frame():
+    process = subprocess.Popen(['python', 'eyechecker.py'])  # or just ['app.exe']
 
-@socketio.on('disconnect')
-def handle_disconnect():
-    print("Client disconnected")
+    # Your main script can continue running without waiting for the GUI to close
+    print("The GUI application has been launched.")
 
-@socketio.on('message')
-def handle_message(data):
-    print("Received message:", data)
-    
 if __name__ == '__main__':
-    socketio.run(app, host='0.0.0.0', port=5000)
+    app.run(debug=True)
+
