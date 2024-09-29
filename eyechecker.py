@@ -39,6 +39,10 @@ eye_closed_time = None
 yawn_counter = 0
 yawn_status = False
 yawn_start_time = None
+alert_counter = 0
+last_alert_time = 0
+ALERT_CUSHION = 10
+#MAX_ALERTS = 2
 ## mouth threshold 
 MOUTH_AR_THRESHOLD = 0.6
 
@@ -115,14 +119,14 @@ while True:
 
         
         #creating to it turns red if signs of sleepiness which will sound alarm in next iteration
-        if eye_closed_counter >= 1 or yawn_counter >= 3:
-            cv2.putText(gray_frame_colored, "DROWSINESS ALERT!", (20, 180), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2)
-            threading.Thread(target=speak_alert).start()
+        current_time = time.time()
+        if (eye_closed_counter % 5 == 0 and eye_closed_counter != 0) or (yawn_counter % 3 == 0 and yawn_counter != 0):
+            if current_time - last_alert_time > ALERT_CUSHION:
+                cv2.putText(gray_frame_colored, "DROWSINESS ALERT!", (20, 180), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2)
+                threading.Thread(target=speak_alert).start()
+                alert_counter += 1
+                last_alert_time = current_time
                 
-            
-            
-        
-
         avg_ear = (left_ear + right_ear) / 2.0 # this could removed later it was for debugging
         ##cv2.putText(gray_frame_colored, f"EAR: {avg_ear:.2f}", (20, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 255), 2)
         cv2.putText(gray_frame_colored, f"Eye Status: {eye_status}", (20, 60), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 255), 2)
