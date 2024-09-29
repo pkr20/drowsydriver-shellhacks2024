@@ -46,7 +46,10 @@ ALERT_CUSHION = 10
 ## mouth threshold 
 MOUTH_AR_THRESHOLD = 0.6
 
-cap = cv2.VideoCapture(1)
+cap = cv2.VideoCapture(0)
+cv2.namedWindow('Facial Landmarks', cv2.WINDOW_NORMAL)
+cv2.setWindowProperty('Facial Landmarks', cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN)
+
 
 while True:
     ret, frame = cap.read()
