@@ -11,6 +11,8 @@ See our showcase here: https://www.drowsydriver.co/
 
 ☝️ Repo for the website [here](https://github.com/javiiicz/drowsydriver-app).
 
+Devpost -  https://devpost.com/software/drowsydriver-e31tn6
+
 ## Features
 
 - **Eye and Mouth Monitoring**: Uses the Eye Aspect Ratio (EAR) and Mouth Aspect Ratio (MAR) to monitor eye closure and yawning.
